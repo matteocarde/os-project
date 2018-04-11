@@ -1,0 +1,3 @@
+/Users/carde/Documents/Workspace/os_project/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/carde/Documents/Workspace/os_project/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/carde/Documents/Workspace/os_project/cmake-build-debug/CMakeFiles/os_project.dir
