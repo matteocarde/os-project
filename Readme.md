@@ -1,0 +1,1 @@
+gcc -Wall -pedantic --ggdb3 file.c

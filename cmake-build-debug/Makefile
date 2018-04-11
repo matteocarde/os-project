@@ -150,6 +150,33 @@ main.c.s:
 	$(MAKE) -f CMakeFiles/os_project.dir/build.make CMakeFiles/os_project.dir/main.c.s
 .PHONY : main.c.s
 
+utilities/utilities.o: utilities/utilities.c.o
+
+.PHONY : utilities/utilities.o
+
+# target to build an object file
+utilities/utilities.c.o:
+	$(MAKE) -f CMakeFiles/os_project.dir/build.make CMakeFiles/os_project.dir/utilities/utilities.c.o
+.PHONY : utilities/utilities.c.o
+
+utilities/utilities.i: utilities/utilities.c.i
+
+.PHONY : utilities/utilities.i
+
+# target to preprocess a source file
+utilities/utilities.c.i:
+	$(MAKE) -f CMakeFiles/os_project.dir/build.make CMakeFiles/os_project.dir/utilities/utilities.c.i
+.PHONY : utilities/utilities.c.i
+
+utilities/utilities.s: utilities/utilities.c.s
+
+.PHONY : utilities/utilities.s
+
+# target to generate assembly for a file
+utilities/utilities.c.s:
+	$(MAKE) -f CMakeFiles/os_project.dir/build.make CMakeFiles/os_project.dir/utilities/utilities.c.s
+.PHONY : utilities/utilities.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -162,6 +189,9 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... utilities/utilities.o"
+	@echo "... utilities/utilities.i"
+	@echo "... utilities/utilities.s"
 .PHONY : help
 
 

@@ -81,6 +81,12 @@
 		<Unit filename="/Users/carde/Documents/Workspace/os_project/main.c">
 			<Option target="os_project"/>
 		</Unit>
+		<Unit filename="/Users/carde/Documents/Workspace/os_project/utilities/utilities.c">
+			<Option target="os_project"/>
+		</Unit>
+		<Unit filename="/Users/carde/Documents/Workspace/os_project/utilities/utilities.h">
+			<Option target="os_project"/>
+		</Unit>
 		<Unit filename="/Users/carde/Documents/Workspace/os_project/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>

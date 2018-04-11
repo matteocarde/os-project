@@ -3,4 +3,4 @@ project(os_project C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(os_project main.c)
+add_executable(os_project main.c utilities/utilities.c utilities/utilities.h)

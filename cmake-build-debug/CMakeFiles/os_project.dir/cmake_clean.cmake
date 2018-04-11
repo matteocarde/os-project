@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/os_project.dir/main.c.o"
+  "CMakeFiles/os_project.dir/utilities/utilities.c.o"
   "os_project.pdb"
   "os_project"
 )
