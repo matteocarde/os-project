@@ -31,6 +31,7 @@ typedef struct {
     int arrival_time;
     InstructionList* instructionList;
     enum task_state state;
+    struct TaskControlBlock* next;
 
 } TaskControlBlock;
 
