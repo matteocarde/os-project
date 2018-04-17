@@ -9,5 +9,6 @@ int main(int argc, char **argv) {
 
     printf("Path preemption %s\nPath nopreemption %s\nPath input %s\n", argsSettings.preemptionPath, argsSettings.noPreemptionPath, argsSettings.inputPath);
 
+    
 
 }
