@@ -13,7 +13,7 @@ TaskControlBlock *createTaskControlBlock(int id, int pc, int arrival_time) {
     newTCB->id = id;
     newTCB->pc = pc;
     newTCB->arrival_time = arrival_time;
-    newTCB->state = new;
+    newTCB->state = state_new;
     newTCB->instructionList = instructionList;
 
     return newTCB;

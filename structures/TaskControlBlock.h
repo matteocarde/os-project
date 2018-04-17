@@ -18,11 +18,11 @@ state: lo stato (new, ready, running, blocked, exit)
  */
 
 enum task_state {
-    new = 0,
-    ready = 1,
-    running = 2,
-    blocked = 3,
-    exit = 4
+    state_new = 0,
+    state_ready = 1,
+    state_running = 2,
+    state_blocked = 3,
+    state_exit = 4
 };
 
 typedef struct {
