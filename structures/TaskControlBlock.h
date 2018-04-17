@@ -27,12 +27,14 @@ enum task_state {
 
 typedef struct {
     int id;
-    int pc;
+    Instruction *pc;
     int arrival_time;
-    InstructionList* instructionList;
+    InstructionList *instructionList;
     enum task_state state;
-    struct TaskControlBlock* next;
+    struct TaskControlBlock *next;
 
 } TaskControlBlock;
+
+TaskControlBlock *createTaskControlBlock(int id, int arrival_time);
 
 #endif //OS_PROJECT_TASK_H

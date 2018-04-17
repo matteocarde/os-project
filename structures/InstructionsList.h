@@ -13,4 +13,8 @@ typedef struct {
     int nOfElements;
 } InstructionList;
 
+Instruction *addInstructionToList(InstructionList *list, enum blockingFlag flag, int length);
+
+InstructionList *createInstructionList();
+
 #endif //OS_PROJECT_INSTRUCTIONSLIST_H

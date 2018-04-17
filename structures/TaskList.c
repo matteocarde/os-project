@@ -2,16 +2,27 @@
 // Created by Matteo Cardellini on 17/04/18.
 //
 
-#include <stdlib.h>
 #include "TaskControlBlock.h";
 #include "TaskList.h"
+#include <stddef.h>
+#include <stdlib.h>
 
-TaskList *addTask(TaskList list, TaskControlBlock *task) {
+void addTaskToList(TaskList *list, TaskControlBlock *task) {
 
-    if (list.nOfElements == 0) {
-        list.head = task;
+    if (list->head == NULL) {
+        list->head = task;
     } else {
-        list.lastItem->next = task;
+        list->lastItem->next = task;
     }
-    list.nOfElements++;
+    list->lastItem = task;
+    list->nOfElements++;
+}
+
+
+TaskList *createTaskList() {
+    TaskList *newTaskList = malloc(sizeof(TaskList));
+    newTaskList->head = NULL;
+    newTaskList->nOfElements = 0;
+    newTaskList->lastItem = NULL;
+    return newTaskList;
 }

@@ -15,4 +15,8 @@ typedef struct {
     int nOfElements;
 } TaskList;
 
+void addTaskToList(TaskList *list, TaskControlBlock *task);
+
+TaskList *createTaskList();
+
 #endif //OS_PROJECT_TASKLIST_H
