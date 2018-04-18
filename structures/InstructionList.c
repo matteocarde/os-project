@@ -6,6 +6,14 @@
 #include "Instruction.h";
 #include "InstructionsList.h"
 
+
+/**
+ * addInstructionToList             - Creates an instruction with the blockingFlag and length specified and adds it to the passed InstructionList
+ * @param {InstructionList*} list   - The list to add the instruction to
+ * @param {blockingFlag} flag       - The blockingFlag of the instruction
+ * @param {int} length              - The length of the instruction
+ * @return {Instruction *}          - The created Instruction
+ */
 Instruction *addInstructionToList(InstructionList *list, enum blockingFlag flag, int length) {
 
     Instruction *newNode = malloc(sizeof(Instruction));
@@ -24,7 +32,10 @@ Instruction *addInstructionToList(InstructionList *list, enum blockingFlag flag,
     return newNode;
 }
 
-
+/**
+ * createInstructionList        - Creates a new InstructionList
+ * @return {InstructionList*}   - The newly created InstructionList
+ */
 InstructionList *createInstructionList() {
     InstructionList *newList = malloc(sizeof(InstructionList));
     newList->nOfElements = 0;

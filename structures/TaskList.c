@@ -7,6 +7,11 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+/**
+ * addTaskToList     - Adds a TaskControlBlock to the TaskList
+ * @param list       - The list to add the TCB to
+ * @param task       - The TaskControlBlock that will be inserted into the TaskList
+ */
 void addTaskToList(TaskList *list, TaskControlBlock *task) {
 
     if (list->head == NULL) {
@@ -18,7 +23,10 @@ void addTaskToList(TaskList *list, TaskControlBlock *task) {
     list->nOfElements++;
 }
 
-
+/**
+ * createTaskList   - Initialize a new TaskList
+ * @return          - The newly created TaskList
+ */
 TaskList *createTaskList() {
     TaskList *newTaskList = malloc(sizeof(TaskList));
     newTaskList->head = NULL;

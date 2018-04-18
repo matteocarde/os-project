@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "utilities.h"
+#include "../structures/TaskList.h"
+#include "../libs/csvparser.h"
 
 
 void printHelp() {
@@ -73,4 +75,61 @@ settings getArgsSettings(int argc, char **argv) {
     } while (nextOption != -1);
 
     return argsSettings;
+}
+
+
+/**
+ * getTaskListFromCSV - This function takes the path of the input csv files and returns the TaskList
+ * data structure that contains all the task and instructions contained
+ * @param {char*} inputFilePath  - The path of the csv to parse
+ * @return {TaskList*}           - The TaskList data structure that contains all the task and instructions contained
+ */
+TaskList *getTaskListFromCSV(char *inputFilePath) {
+
+    TaskList *taskList = createTaskList();
+
+    TaskControlBlock *currentTask = NULL;
+
+    CsvParser *csvParser = CsvParser_new(inputFilePath, ",", 0);
+    CsvRow *row;
+
+    char *relativePath;
+    strcpy(relativePath, "../");
+    strcat(relativePath, inputFilePath);
+
+
+    if (access(relativePath, R_OK) == -1) {
+        fprintf(stderr, "File %s not found\n", inputFilePath);
+        return NULL;
+    }
+
+    do {
+        row = CsvParser_getRow(csvParser);
+        if (row == NULL) {
+            break;
+        }
+
+        char **rowFields = CsvParser_getFields(row);
+
+        char *type = rowFields[0];
+        if (strcmp(type, "t") == 0) {
+            int taskId = atoi(rowFields[1]);
+            int arrivalTime = atoi(rowFields[2]);
+            currentTask = createTaskControlBlock(taskId, arrivalTime);
+            addTaskToList(taskList, currentTask);
+        } else if (strcmp(type, "i") == 0) {
+            if (currentTask == NULL) {
+                fprintf(stderr, "CSV FORMAT ERROR: The file starts with instructions without a parent task");
+                return 1;
+            }
+            enum blockingFlag type_flag = (enum blockingFlag) atoi(rowFields[1]);
+            int length = atoi(rowFields[2]);
+            addInstructionToList(currentTask->instructionList, type_flag, length);
+        }
+        CsvParser_destroy_row(row);
+    } while (row);
+
+    CsvParser_destroy(csvParser);
+
+    return taskList;
 }
