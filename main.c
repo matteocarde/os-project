@@ -1,7 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <sysexits.h>
 #include "utilities/utilities.h"
+#include "core/SchedulerNonPreemptive.h"
 
 int main(int argc, char **argv) {
+
+    //TODO: Use perror e codici di errore da https://goo.gl/Y40V0r
 
     printf("Getting settings from args...\n");
     settings argsSettings;
@@ -15,9 +20,12 @@ int main(int argc, char **argv) {
     TaskList *taskList = getTaskListFromCSV(argsSettings.inputPath);
     if (taskList == NULL) {
         fprintf(stderr, "ERROR: Impossible to create task list");
-        return 1;
+        exit(EX_OSFILE);
     }
     printf("Done\n");
+
+
+    SchedulerNonPreemptive(taskList);
 
 //    TaskControlBlock *printTCB = taskList->head;
 //    for (int i = 0; i < taskList->nOfElements; ++i) {

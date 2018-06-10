@@ -3,6 +3,7 @@
 //
 
 #include <stdlib.h>
+#include <printf.h>
 #include "TaskControlBlock.h"
 
 
@@ -23,4 +24,25 @@ TaskControlBlock *createTaskControlBlock(int id, int arrival_time) {
     newTCB->instructionList = instructionList;
 
     return newTCB;
+}
+
+char *getStateName(enum task_state state) {
+    switch (state) {
+        case state_new :
+            return "new";
+        case state_ready :
+            return "ready";
+        case state_running :
+            return "running";
+        case state_blocked :
+            return "blocked";
+        case state_exit:
+            return "exit";
+    }
+}
+
+void changeStateToTask(TaskControlBlock *task, enum task_state state) {
+    //TODO: Print into log file status change
+    fprintf(stdout, "Task #%d è passata nello stato %s\n", task->id, getStateName(state));
+    task->state = state;
 }

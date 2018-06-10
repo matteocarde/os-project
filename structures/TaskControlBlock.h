@@ -32,9 +32,12 @@ typedef struct {
     InstructionList *instructionList;
     enum task_state state;
     struct TaskControlBlock *next;
+    Instruction *blockingInstruction;
 
 } TaskControlBlock;
 
 TaskControlBlock *createTaskControlBlock(int id, int arrival_time);
+
+void changeStateToTask(TaskControlBlock *task, enum task_state state);
 
 #endif //OS_PROJECT_TASK_H

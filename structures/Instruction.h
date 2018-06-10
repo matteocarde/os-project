@@ -16,14 +16,15 @@ se l’istruzione è bloccante, il task si blocca per un numero randomico compre
  */
 
 enum blockingFlag {
-    blocking = 0,
-    nonBlocking = 1
+    nonBlocking = 0,
+    blocking = 1
 };
 
+//TODO: Use Instruction_t like gnu
 typedef struct {
     enum blockingFlag type_flag;
     int length;
-    struct Instruction* next;
+    struct Instruction *next;
 } Instruction;
 
 #endif //OS_PROJECT_INSTRUCTION_H
