@@ -23,7 +23,7 @@ TaskControlBlock *createTaskControlBlock(int id, int arrival_time) {
     newTCB->state = state_new;
     newTCB->instructionList = instructionList;
     newTCB->next = NULL;
-    newTCB->blockingInstruction = NULL;
+    newTCB->pc = NULL;
 
     return newTCB;
 }
@@ -43,8 +43,8 @@ char *getStateName(enum task_state state) {
     }
 }
 
-void changeStateToTask(TaskControlBlock *task, enum task_state state) {
+void changeTaskState(TaskControlBlock *task, enum task_state state) {
     //TODO: Print into log file status change
-    fprintf(stdout, "Task #%d è passata nello stato %s\n", task->id, getStateName(state));
+    fprintf(stdout, "\tTask #%d è passata nello stato %s\n", task->id, getStateName(state));
     task->state = state;
 }

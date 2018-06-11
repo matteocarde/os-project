@@ -22,14 +22,14 @@ void tickAllBlockedTasks(StateList *blockedList, StateList *readyList) {
 
     while (currentElement != NULL) {
         TaskControlBlock *currentTask = currentElement->task;
-        printf("Task #%d: Ha bisogno ancora di %d clock\n", currentTask->id, currentTask->blockingInstruction->length);
-        if (currentTask->blockingInstruction->length == 0) {
+        printf("\tTask #%d: Ha bisogno ancora di %d clock\n", currentTask->id, currentTask->pc->length);
+        if (currentTask->pc->length == 0) {
             removeFromList(blockedList, currentElement);
             pushToStateList(readyList, currentElement->task);
-            printf("Task #%d: Terminato I/O\n", currentElement->task->id);
+            printf("\tTask #%d: Terminato I/O\n", currentElement->task->id);
         }
-        currentTask->blockingInstruction->length--;
-        currentElement = (StateListElement *) currentElement->next;
+        currentTask->pc->length--;
+        currentElement = (StateListElement *) currentElement->previous;
     }
 
 
@@ -52,14 +52,14 @@ void SchedulerNonPreemptive(TaskList *taskList) {
         printf("PC #%d\n", pc);
 
         if (nextTaskToArrive != NULL && nextTaskToArrive->arrival_time == pc) {
-            changeStateToTask(nextTaskToArrive, state_ready);
+            changeTaskState(nextTaskToArrive, state_ready);
             pushToStateList(readyList, nextTaskToArrive);
             nextTaskToArrive = (TaskControlBlock *) nextTaskToArrive->next;
         }
 
         tickAllBlockedTasks(blockedList, readyList);
 
-        if (readyList->nOfElements == 0 && nextTaskToArrive == NULL && runningTask == NULL) {
+        if (readyList->nOfElements == 0 && blockedList->nOfElements == 0 && nextTaskToArrive == NULL && runningTask == NULL) {
             break;
         }
 
@@ -71,24 +71,26 @@ void SchedulerNonPreemptive(TaskList *taskList) {
                 continue;
             }
 
-            if (runningTask->blockingInstruction == NULL) {
+            if (runningTask->pc == NULL) {
                 currentInstruction = runningTask->instructionList->head;
             } else {
-                if (runningTask->blockingInstruction->next == NULL) {
+                if (runningTask->pc->next == NULL) {
+                    changeTaskState(runningTask, state_exit);
                     runningTask = NULL;
                     continue;
                 } else {
-                    currentInstruction = (Instruction *) runningTask->blockingInstruction->next;
+                    currentInstruction = (Instruction *) runningTask->pc->next;
                 }
             }
         }
 
         currentInstruction->length--;
+        runningTask->pc = currentInstruction;
 
         if (currentInstruction->type_flag == nonBlocking) {
 
             if (runningTask->state != state_running) {
-                changeStateToTask(runningTask, state_running);
+                changeTaskState(runningTask, state_running);
             }
 
             if (currentInstruction->length > 0) {
@@ -96,10 +98,10 @@ void SchedulerNonPreemptive(TaskList *taskList) {
             }
 
             if (currentInstruction->next != NULL) {
-                printf("Task #%d: Nuova istruzione\n", runningTask->id);
+                printf("\tTask #%d: Nuova istruzione\n", runningTask->id);
                 currentInstruction = (Instruction *) currentInstruction->next;
             } else {
-                printf("Task #%d: Terminato\n", runningTask->id);
+                printf("\tTask #%d: Terminato\n", runningTask->id);
                 currentInstruction = NULL;
                 runningTask = NULL;
             }
@@ -107,8 +109,7 @@ void SchedulerNonPreemptive(TaskList *taskList) {
         }
 
         if (currentInstruction->type_flag == blocking) {
-            runningTask->blockingInstruction = currentInstruction;
-            changeStateToTask(runningTask, state_blocked);
+            changeTaskState(runningTask, state_blocked);
             pushToStateList(blockedList, runningTask);
             runningTask = NULL;
             currentInstruction = NULL;

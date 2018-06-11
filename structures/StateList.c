@@ -25,8 +25,8 @@ void pushToStateList(StateList *list, TaskControlBlock *task) {
         list->front = newElement;
         list->back = newElement;
     } else {
-        newElement->previous = list->back;
-        list->back->next = newElement;
+        newElement->next = list->back;
+        list->back->previous = newElement;
         list->back = newElement;
 
     }
@@ -55,21 +55,29 @@ TaskControlBlock *popFromStateList(StateList *list) {
 
 void removeFromList(StateList *list, StateListElement *element) {
 
-    if (element->next != NULL) {
-        element->next = element->previous;
-    }
-
-    if (element->previous != NULL) {
-        element->previous = element->next;
-    }
-
     if (list->front == element) {
-        list->front = (StateListElement *) element->next;
+        if (element->previous != NULL) {
+            list->front = (StateListElement *) element->previous;
+            ((StateListElement *) element->previous)->next = NULL;
+        } else {
+            list->front = NULL;
+        }
     }
 
     if (list->back == element) {
-        list->back = (StateListElement *) element->previous;
+        if (element->next != NULL) {
+            list->back = (StateListElement *) element->next;
+            ((StateListElement *) element->next)->previous = NULL;
+        } else {
+            list->back = NULL;
+        }
     }
+
+    if (element->next != NULL && element->previous != NULL) {
+        ((StateListElement *) element->previous)->next = element->next;
+        ((StateListElement *) element->next)->previous = element->previous;
+    }
+
 
     list->nOfElements--;
 
