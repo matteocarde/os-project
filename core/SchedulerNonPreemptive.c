@@ -4,10 +4,10 @@
 
 #include "../structures/TaskList.h"
 #include "../structures/StateList.h"
-#include "../structures/TaskControlBlock.h"
 #include "../structures/Instruction.h"
 #include <stddef.h>
 #include <printf.h>
+#include <stdlib.h>
 
 unsigned int pc = 0;
 
@@ -23,16 +23,26 @@ void tickAllBlockedTasks(StateList *blockedList, StateList *readyList) {
     while (currentElement != NULL) {
         TaskControlBlock *currentTask = currentElement->task;
         printf("\tTask #%d: Ha bisogno ancora di %d clock\n", currentTask->id, currentTask->pc->length);
-        if (currentTask->pc->length == 0) {
-            removeFromList(blockedList, currentElement);
-            pushToStateList(readyList, currentElement->task);
-            printf("\tTask #%d: Terminato I/O\n", currentElement->task->id);
+
+        if (currentTask->pc->length == 1) {
+            StateListElement *endedElement = currentElement;
+            currentElement = (StateListElement *) endedElement->previous;
+            removeFromList(blockedList, endedElement);
+            pushToStateList(readyList, endedElement->task);
+            printf("\tTask #%d: Terminato I/O\n", endedElement->task->id);
+        } else {
+            currentTask->pc->length--;
+            currentElement = (StateListElement *) currentElement->previous;
         }
-        currentTask->pc->length--;
-        currentElement = (StateListElement *) currentElement->previous;
     }
 
 
+}
+
+int getRandomLenght(int maxLenght) {
+    srand(time(NULL));
+    return maxLenght;
+    return rand() % maxLenght + 1; //TODO: Ricordati di rimuoverlo
 }
 
 void SchedulerNonPreemptive(TaskList *taskList) {
@@ -59,7 +69,8 @@ void SchedulerNonPreemptive(TaskList *taskList) {
 
         tickAllBlockedTasks(blockedList, readyList);
 
-        if (readyList->nOfElements == 0 && blockedList->nOfElements == 0 && nextTaskToArrive == NULL && runningTask == NULL) {
+        if (readyList->nOfElements == 0 && blockedList->nOfElements == 0 && nextTaskToArrive == NULL &&
+            runningTask == NULL) {
             break;
         }
 
@@ -94,6 +105,7 @@ void SchedulerNonPreemptive(TaskList *taskList) {
             }
 
             if (currentInstruction->length > 0) {
+                printf("\tTask #%d: Eseguo calcolo\n", runningTask->id);
                 continue;
             }
 
@@ -109,6 +121,8 @@ void SchedulerNonPreemptive(TaskList *taskList) {
         }
 
         if (currentInstruction->type_flag == blocking) {
+            srand(time(NULL));
+            currentInstruction->length = getRandomLenght(currentInstruction->length);
             changeTaskState(runningTask, state_blocked);
             pushToStateList(blockedList, runningTask);
             runningTask = NULL;
