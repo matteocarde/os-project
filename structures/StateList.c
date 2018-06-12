@@ -41,10 +41,10 @@ TaskControlBlock *popFromStateList(StateList *list) {
         return NULL;
     }
 
-    StateListElement *poppedElement = list->back;
+    StateListElement *poppedElement = list->front;
     TaskControlBlock *poppedTask = poppedElement->task;
 
-    list->back = (StateListElement *) list->back->previous;
+    list->front = (StateListElement *) list->front->previous;
     list->nOfElements--;
     free(poppedElement);
 

@@ -29,9 +29,11 @@ typedef struct {
     int id;
     Instruction *pc;
     int arrival_time;
+    int process_time;
     InstructionList *instructionList;
     enum task_state state;
     struct TaskControlBlock *next;
+    int execution_time;
 } TaskControlBlock;
 
 TaskControlBlock *createTaskControlBlock(int id, int arrival_time);

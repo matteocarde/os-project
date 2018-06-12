@@ -5,6 +5,6 @@
 #ifndef OS_PROJECT_SCHEDULER_NON_PREEMPTIVE_H
 #define OS_PROJECT_SCHEDULER_NON_PREEMPTIVE_H
 
-void SchedulerNonPreemptive(TaskList *taskList);
+void Scheduler(TaskList *taskList, bool isPreemptive);
 
 #endif //OS_PROJECT_SCHEDULER_NON_PREEMPTIVE_H

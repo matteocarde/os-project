@@ -124,6 +124,11 @@ TaskList *getTaskListFromCSV(char *inputFilePath) {
             }
             enum blockingFlag type_flag = (enum blockingFlag) atoi(rowFields[1]);
             int length = atoi(rowFields[2]);
+
+            if (type_flag == nonBlocking) {
+                currentTask->process_time += length;
+            }
+
             addInstructionToList(currentTask->instructionList, type_flag, length);
         }
         CsvParser_destroy_row(row);

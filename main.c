@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sysexits.h>
+#include <stdbool.h>
 #include "utilities/utilities.h"
-#include "core/SchedulerNonPreemptive.h"
+#include "core/Scheduler.h"
 
 int main(int argc, char **argv) {
 
@@ -25,7 +26,7 @@ int main(int argc, char **argv) {
     printf("Done\n");
 
 
-    SchedulerNonPreemptive(taskList);
+    Scheduler(taskList, true);
 
 //    TaskControlBlock *printTCB = taskList->head;
 //    for (int i = 0; i < taskList->nOfElements; ++i) {

@@ -22,6 +22,8 @@ TaskControlBlock *createTaskControlBlock(int id, int arrival_time) {
     newTCB->arrival_time = arrival_time;
     newTCB->state = state_new;
     newTCB->instructionList = instructionList;
+    newTCB->process_time = 0;
+    newTCB->execution_time = 0;
     newTCB->next = NULL;
     newTCB->pc = NULL;
 

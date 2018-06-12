@@ -4,16 +4,57 @@
 
 #include "../structures/TaskList.h"
 #include "../structures/StateList.h"
+#include "../structures/TaskControlBlock.h"
 #include "../structures/Instruction.h"
 #include <stddef.h>
 #include <printf.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 unsigned int pc = 0;
 
 
-TaskControlBlock *selectionFunction(StateList *readyList) {
-    return popFromStateList(readyList);
+//SPN: Shortest Process Time
+TaskControlBlock *selectionFunctionSPN(StateList *readyList) {
+    StateListElement *currentElement = readyList->front;
+    StateListElement *selectedElement = NULL;
+    if (currentElement == NULL) {
+        return NULL;
+    }
+    int minProcessTime = currentElement->task->process_time;
+    while (currentElement != NULL) {
+        int currentTaskProcessTime = currentElement->task->process_time;
+        if (currentTaskProcessTime <= minProcessTime) {
+            minProcessTime = currentTaskProcessTime;
+            selectedElement = currentElement;
+        }
+        currentElement = (StateListElement *) currentElement->previous;
+    }
+    removeFromList(readyList, selectedElement);
+    return selectedElement->task;
+}
+
+int i = 0;
+
+//SRT: Shortest Remaining Time
+TaskControlBlock *selectionFunctionSRT(StateList *readyList) {
+    i++;
+    StateListElement *currentElement = readyList->front;
+    StateListElement *selectedElement = NULL;
+    if (currentElement == NULL) {
+        return NULL;
+    }
+    int minRemainingTime = currentElement->task->process_time - currentElement->task->execution_time;
+    while (currentElement != NULL) {
+        int currentTaskRemainingTime = currentElement->task->process_time - currentElement->task->execution_time;
+        if (currentTaskRemainingTime <= minRemainingTime) {
+            minRemainingTime = currentTaskRemainingTime;
+            selectedElement = currentElement;
+        }
+        currentElement = (StateListElement *) currentElement->previous;
+    }
+    removeFromList(readyList, selectedElement);
+    return selectedElement->task;
 }
 
 void tickAllBlockedTasks(StateList *blockedList, StateList *readyList) {
@@ -40,12 +81,12 @@ void tickAllBlockedTasks(StateList *blockedList, StateList *readyList) {
 }
 
 int getRandomLenght(int maxLenght) {
-    srand(time(NULL));
+    srand((unsigned int) time(NULL));
     return maxLenght;
     return rand() % maxLenght + 1; //TODO: Ricordati di rimuoverlo
 }
 
-void SchedulerNonPreemptive(TaskList *taskList) {
+void Scheduler(TaskList *taskList, bool isPreemptive) {
 
     TaskControlBlock *nextTaskToArrive = taskList->head;
     TaskControlBlock *runningTask = NULL;
@@ -58,16 +99,19 @@ void SchedulerNonPreemptive(TaskList *taskList) {
 
         //TODO: Guardare il caso in cui due task arrivano assieme
 
-        pc++; //TODO: Magari mettilo in fondo ?
         printf("PC #%d\n", pc);
 
-        if (nextTaskToArrive != NULL && nextTaskToArrive->arrival_time == pc) {
+        while (nextTaskToArrive != NULL && nextTaskToArrive->arrival_time == pc) {
             changeTaskState(nextTaskToArrive, state_ready);
             pushToStateList(readyList, nextTaskToArrive);
             nextTaskToArrive = (TaskControlBlock *) nextTaskToArrive->next;
+            if (isPreemptive && runningTask != NULL) {
+                //Se siamo in modalità preemptive, secondo l'algoritmo SRT, devo rischedulare ad ogni arrivo
+                pushToStateList(readyList, runningTask);
+                changeTaskState(runningTask, state_ready);
+                runningTask = NULL;
+            }
         }
-
-        tickAllBlockedTasks(blockedList, readyList);
 
         if (readyList->nOfElements == 0 && blockedList->nOfElements == 0 && nextTaskToArrive == NULL &&
             runningTask == NULL) {
@@ -76,37 +120,42 @@ void SchedulerNonPreemptive(TaskList *taskList) {
 
 
         if (runningTask == NULL) {
-            runningTask = selectionFunction(readyList);
+            runningTask = isPreemptive ? selectionFunctionSRT(readyList) : selectionFunctionSPN(readyList);
 
             if (runningTask == NULL) {
-                continue;
+                goto TICK;
             }
 
             if (runningTask->pc == NULL) {
                 currentInstruction = runningTask->instructionList->head;
             } else {
-                if (runningTask->pc->next == NULL) {
-                    changeTaskState(runningTask, state_exit);
-                    runningTask = NULL;
-                    continue;
+                if (runningTask->pc->length == 0) {
+                    if (runningTask->pc->next == NULL) {
+                        changeTaskState(runningTask, state_exit);
+                        runningTask = NULL;
+                        goto TICK;
+                    } else {
+                        currentInstruction = (Instruction *) runningTask->pc->next;
+                    }
                 } else {
-                    currentInstruction = (Instruction *) runningTask->pc->next;
+                    currentInstruction = runningTask->pc;
                 }
             }
         }
 
-        currentInstruction->length--;
         runningTask->pc = currentInstruction;
 
-        if (currentInstruction->type_flag == nonBlocking) {
+        if (runningTask->state != state_running) {
+            changeTaskState(runningTask, state_running);
+        }
 
-            if (runningTask->state != state_running) {
-                changeTaskState(runningTask, state_running);
-            }
+        if (currentInstruction->type_flag == nonBlocking) {
+            currentInstruction->length--;
+            runningTask->execution_time++;
 
             if (currentInstruction->length > 0) {
                 printf("\tTask #%d: Eseguo calcolo\n", runningTask->id);
-                continue;
+                goto TICK;
             }
 
             if (currentInstruction->next != NULL) {
@@ -117,11 +166,10 @@ void SchedulerNonPreemptive(TaskList *taskList) {
                 currentInstruction = NULL;
                 runningTask = NULL;
             }
-            continue;
+            goto TICK;
         }
 
         if (currentInstruction->type_flag == blocking) {
-            srand(time(NULL));
             currentInstruction->length = getRandomLenght(currentInstruction->length);
             changeTaskState(runningTask, state_blocked);
             pushToStateList(blockedList, runningTask);
@@ -129,7 +177,11 @@ void SchedulerNonPreemptive(TaskList *taskList) {
             currentInstruction = NULL;
         }
 
+        TICK:
+        tickAllBlockedTasks(blockedList, readyList);
 
+
+        pc++; //TODO: Magari mettilo in fondo ?
     }
 
     printf("END\n");
