@@ -100,8 +100,7 @@ void Scheduler(threadArgs_t *threadArgs) {
 //        printf("Core#%d - PC #%d\n", threadArgs->threadId, pc);
 
         FETCH:
-
-        while (nextTaskToArrive != NULL && nextTaskToArrive->arrival_time == pc) {
+        while (nextTaskToArrive != NULL && nextTaskToArrive->arrival_time <= pc) {
 
             pthread_mutex_lock(threadArgs->mutex);
             //Se la nextTaskToArrive non è nello state_new vuol dire che l'altro core l'ha già presa in carico
@@ -110,6 +109,7 @@ void Scheduler(threadArgs_t *threadArgs) {
                 changeTaskState(nextTaskToArrive, state_ready, pc, threadArgs->threadId);
             } else {
                 pthread_mutex_unlock(threadArgs->mutex);
+                nextTaskToArrive = (TaskControlBlock *) nextTaskToArrive->next;
                 goto SELECTION;
             }
             pthread_mutex_unlock(threadArgs->mutex);
