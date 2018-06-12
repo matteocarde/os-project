@@ -4,8 +4,6 @@
 
 #include "../structures/TaskList.h"
 #include "../structures/StateList.h"
-#include "../structures/TaskControlBlock.h"
-#include "../structures/Instruction.h"
 #include <stddef.h>
 #include <printf.h>
 #include <stdlib.h>
@@ -57,6 +55,7 @@ TaskControlBlock *selectionFunctionSRT(StateList *readyList) {
     return selectedElement->task;
 }
 
+
 void tickAllBlockedTasks(StateList *blockedList, StateList *readyList) {
 
     StateListElement *currentElement = blockedList->front;
@@ -65,14 +64,14 @@ void tickAllBlockedTasks(StateList *blockedList, StateList *readyList) {
         TaskControlBlock *currentTask = currentElement->task;
         printf("\tTask #%d: Ha bisogno ancora di %d clock\n", currentTask->id, currentTask->pc->length);
 
-        if (currentTask->pc->length == 1) {
+        currentTask->pc->length--;
+        if (currentTask->pc->length == 0) {
             StateListElement *endedElement = currentElement;
             currentElement = (StateListElement *) endedElement->previous;
             removeFromList(blockedList, endedElement);
             pushToStateList(readyList, endedElement->task);
             printf("\tTask #%d: Terminato I/O\n", endedElement->task->id);
         } else {
-            currentTask->pc->length--;
             currentElement = (StateListElement *) currentElement->previous;
         }
     }
@@ -96,8 +95,6 @@ void Scheduler(TaskList *taskList, bool isPreemptive) {
     StateList *blockedList = createStateList();
 
     while (pc < 100) { //TODO: SAFE. Remember to remove it
-
-        //TODO: Guardare il caso in cui due task arrivano assieme
 
         printf("PC #%d\n", pc);
 
@@ -128,21 +125,24 @@ void Scheduler(TaskList *taskList, bool isPreemptive) {
 
             if (runningTask->pc == NULL) {
                 currentInstruction = runningTask->instructionList->head;
-            } else {
-                if (runningTask->pc->length == 0) {
-                    if (runningTask->pc->next == NULL) {
-                        changeTaskState(runningTask, state_exit);
-                        runningTask = NULL;
-                        goto TICK;
-                    } else {
-                        currentInstruction = (Instruction *) runningTask->pc->next;
-                    }
-                } else {
-                    currentInstruction = runningTask->pc;
-                }
+                goto EXECUTION;
             }
         }
 
+        if (runningTask->pc->length == 0) {
+            if (runningTask->pc->next == NULL) {
+                changeTaskState(runningTask, state_exit);
+                runningTask = NULL;
+                goto TICK;
+            } else {
+                currentInstruction = (Instruction *) runningTask->pc->next;
+            }
+        } else {
+            currentInstruction = runningTask->pc;
+        }
+
+
+        EXECUTION:
         runningTask->pc = currentInstruction;
 
         if (runningTask->state != state_running) {
@@ -153,8 +153,8 @@ void Scheduler(TaskList *taskList, bool isPreemptive) {
             currentInstruction->length--;
             runningTask->execution_time++;
 
+            printf("\tTask #%d: Eseguo calcolo\n", runningTask->id);
             if (currentInstruction->length > 0) {
-                printf("\tTask #%d: Eseguo calcolo\n", runningTask->id);
                 goto TICK;
             }
 
@@ -162,7 +162,7 @@ void Scheduler(TaskList *taskList, bool isPreemptive) {
                 printf("\tTask #%d: Nuova istruzione\n", runningTask->id);
                 currentInstruction = (Instruction *) currentInstruction->next;
             } else {
-                printf("\tTask #%d: Terminato\n", runningTask->id);
+                changeTaskState(runningTask, state_exit);
                 currentInstruction = NULL;
                 runningTask = NULL;
             }
@@ -181,7 +181,7 @@ void Scheduler(TaskList *taskList, bool isPreemptive) {
         tickAllBlockedTasks(blockedList, readyList);
 
 
-        pc++; //TODO: Magari mettilo in fondo ?
+        pc++;
     }
 
     printf("END\n");

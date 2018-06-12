@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
     printf("Done\n");
 
 
-    Scheduler(taskList, true);
+    Scheduler(taskList, false);
 
 //    TaskControlBlock *printTCB = taskList->head;
 //    for (int i = 0; i < taskList->nOfElements; ++i) {
