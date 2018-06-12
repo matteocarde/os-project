@@ -45,8 +45,9 @@ char *getStateName(enum task_state state) {
     }
 }
 
-void changeTaskState(TaskControlBlock *task, enum task_state state) {
+void changeTaskState(TaskControlBlock *task, enum task_state state, unsigned int pc, int threadId) {
     //TODO: Print into log file status change
-    fprintf(stdout, "\tTask #%d è passata nello stato %s\n", task->id, getStateName(state));
+    fprintf(stdout, "Core #%d - PC#%d - Task #%d è passata nello stato %s\n", threadId, pc, task->id,
+            getStateName(state));
     task->state = state;
 }

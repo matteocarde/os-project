@@ -38,6 +38,6 @@ typedef struct {
 
 TaskControlBlock *createTaskControlBlock(int id, int arrival_time);
 
-void changeTaskState(TaskControlBlock *task, enum task_state state);
+void changeTaskState(TaskControlBlock *task, enum task_state state, unsigned int pc, int threadId);
 
 #endif //OS_PROJECT_TASK_H

@@ -2,6 +2,8 @@
 // Created by Matteo Cardellini on 11/04/18.
 //
 
+#include <stdbool.h>
+#include <ntsid.h>
 #include "../structures/TaskList.h"
 
 #ifndef OS_PROJECT_UTILITIES_H
@@ -12,9 +14,17 @@ typedef struct {
     char *noPreemptionPath;
     char *inputPath;
     int isHelp;
-} settings;
+} programArgs_t;
 
-settings getArgsSettings(int argc, char **argv);
+typedef struct {
+    programArgs_t programArgs;
+    bool isPreemptive;
+    TaskList* taskList;
+    int threadId;
+    pthread_mutex_t* mutex;
+} threadArgs_t;
+
+programArgs_t getArgsSettings(int argc, char **argv);
 
 TaskList *getTaskListFromCSV(char *inputFile);
 

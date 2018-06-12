@@ -25,9 +25,9 @@ void printHelp() {
  * @param {char**}      argv    - An array of chars with the arguments
  * @return {settings}           - A stucture containing the passed settings
  */
-settings getArgsSettings(int argc, char **argv) {
+programArgs_t getArgsSettings(int argc, char **argv) {
 
-    settings argsSettings;
+    programArgs_t argsSettings;
 
     const char *const short_options = "ho:i:np";
 

@@ -4,12 +4,13 @@
 
 #include "../structures/TaskList.h"
 #include "../structures/StateList.h"
+#include "../utilities/utilities.h"
+#include "../structures/TaskControlBlock.h"
 #include <stddef.h>
 #include <printf.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
-unsigned int pc = 0;
+#include <pthread.h>
 
 
 //SPN: Shortest Process Time
@@ -32,11 +33,9 @@ TaskControlBlock *selectionFunctionSPN(StateList *readyList) {
     return selectedElement->task;
 }
 
-int i = 0;
 
 //SRT: Shortest Remaining Time
 TaskControlBlock *selectionFunctionSRT(StateList *readyList) {
-    i++;
     StateListElement *currentElement = readyList->front;
     StateListElement *selectedElement = NULL;
     if (currentElement == NULL) {
@@ -85,9 +84,11 @@ int getRandomLenght(int maxLenght) {
     return rand() % maxLenght + 1; //TODO: Ricordati di rimuoverlo
 }
 
-void Scheduler(TaskList *taskList, bool isPreemptive) {
+void Scheduler(threadArgs_t *threadArgs) {
 
-    TaskControlBlock *nextTaskToArrive = taskList->head;
+    unsigned int pc = 0;
+
+    TaskControlBlock *nextTaskToArrive = threadArgs->taskList->head;
     TaskControlBlock *runningTask = NULL;
     Instruction *currentInstruction = NULL;
 
@@ -96,20 +97,34 @@ void Scheduler(TaskList *taskList, bool isPreemptive) {
 
     while (pc < 100) { //TODO: SAFE. Remember to remove it
 
-        printf("PC #%d\n", pc);
+//        printf("Core#%d - PC #%d\n", threadArgs->threadId, pc);
+
+        FETCH:
 
         while (nextTaskToArrive != NULL && nextTaskToArrive->arrival_time == pc) {
-            changeTaskState(nextTaskToArrive, state_ready);
+
+            pthread_mutex_lock(threadArgs->mutex);
+            //Se la nextTaskToArrive non è nello state_new vuol dire che l'altro core l'ha già presa in carico
+            //Utilizzo il mutex qui per rendere atomica il check e il cambio dello stato della task
+            if (nextTaskToArrive->state == state_new) {
+                changeTaskState(nextTaskToArrive, state_ready, pc, threadArgs->threadId);
+            } else {
+                pthread_mutex_unlock(threadArgs->mutex);
+                goto SELECTION;
+            }
+            pthread_mutex_unlock(threadArgs->mutex);
+
             pushToStateList(readyList, nextTaskToArrive);
             nextTaskToArrive = (TaskControlBlock *) nextTaskToArrive->next;
-            if (isPreemptive && runningTask != NULL) {
+            if (threadArgs->isPreemptive && runningTask != NULL) {
                 //Se siamo in modalità preemptive, secondo l'algoritmo SRT, devo rischedulare ad ogni arrivo
                 pushToStateList(readyList, runningTask);
-                changeTaskState(runningTask, state_ready);
+                changeTaskState(runningTask, state_ready, pc, threadArgs->threadId);
                 runningTask = NULL;
             }
         }
 
+        SELECTION:
         if (readyList->nOfElements == 0 && blockedList->nOfElements == 0 && nextTaskToArrive == NULL &&
             runningTask == NULL) {
             break;
@@ -117,7 +132,7 @@ void Scheduler(TaskList *taskList, bool isPreemptive) {
 
 
         if (runningTask == NULL) {
-            runningTask = isPreemptive ? selectionFunctionSRT(readyList) : selectionFunctionSPN(readyList);
+            runningTask = threadArgs->isPreemptive ? selectionFunctionSRT(readyList) : selectionFunctionSPN(readyList);
 
             if (runningTask == NULL) {
                 goto TICK;
@@ -131,7 +146,7 @@ void Scheduler(TaskList *taskList, bool isPreemptive) {
 
         if (runningTask->pc->length == 0) {
             if (runningTask->pc->next == NULL) {
-                changeTaskState(runningTask, state_exit);
+                changeTaskState(runningTask, state_exit, pc, threadArgs->threadId);
                 runningTask = NULL;
                 goto TICK;
             } else {
@@ -146,7 +161,7 @@ void Scheduler(TaskList *taskList, bool isPreemptive) {
         runningTask->pc = currentInstruction;
 
         if (runningTask->state != state_running) {
-            changeTaskState(runningTask, state_running);
+            changeTaskState(runningTask, state_running, pc, threadArgs->threadId);
         }
 
         if (currentInstruction->type_flag == nonBlocking) {
@@ -162,7 +177,7 @@ void Scheduler(TaskList *taskList, bool isPreemptive) {
                 printf("\tTask #%d: Nuova istruzione\n", runningTask->id);
                 currentInstruction = (Instruction *) currentInstruction->next;
             } else {
-                changeTaskState(runningTask, state_exit);
+                changeTaskState(runningTask, state_exit, pc, threadArgs->threadId);
                 currentInstruction = NULL;
                 runningTask = NULL;
             }
@@ -171,7 +186,7 @@ void Scheduler(TaskList *taskList, bool isPreemptive) {
 
         if (currentInstruction->type_flag == blocking) {
             currentInstruction->length = getRandomLenght(currentInstruction->length);
-            changeTaskState(runningTask, state_blocked);
+            changeTaskState(runningTask, state_blocked, pc, threadArgs->threadId);
             pushToStateList(blockedList, runningTask);
             runningTask = NULL;
             currentInstruction = NULL;
@@ -180,10 +195,9 @@ void Scheduler(TaskList *taskList, bool isPreemptive) {
         TICK:
         tickAllBlockedTasks(blockedList, readyList);
 
-
         pc++;
     }
 
-    printf("END\n");
+    printf("Core #%d - PC #%d END\n", threadArgs->threadId, pc);
 }
 
