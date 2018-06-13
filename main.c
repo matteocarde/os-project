@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sysexits.h>
-#include <stdbool.h>
 #include <ntsid.h>
+#include <zconf.h>
+#include <sysexits.h>
 #include <pthread.h>
 #include "utilities/utilities.h"
 #include "core/Scheduler.h"
@@ -27,12 +27,14 @@ int main(int argc, char **argv) {
     }
     printf("Done\n");
 
+//    pid_t child_pid = fork();
+
     pthread_mutex_t mutex;
     pthread_mutex_init(&mutex, NULL);
 
     threadArgs_t threadArgsCore1 = threadArgsCore1;
     threadArgsCore1.taskList = taskList;
-    threadArgsCore1.isPreemptive = true;
+    threadArgsCore1.isPreemptive = false;
     threadArgsCore1.programArgs = programArgs;
     threadArgsCore1.threadId = 0;
     threadArgsCore1.mutex = &mutex;

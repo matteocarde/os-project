@@ -6,6 +6,7 @@
 #include "../structures/StateList.h"
 #include "../utilities/utilities.h"
 #include "../structures/TaskControlBlock.h"
+#include "../structures/Instruction.h"
 #include <stddef.h>
 #include <printf.h>
 #include <stdlib.h>
@@ -55,21 +56,25 @@ TaskControlBlock *selectionFunctionSRT(StateList *readyList) {
 }
 
 
-void tickAllBlockedTasks(StateList *blockedList, StateList *readyList) {
+void tickAllBlockedTasks(StateList *blockedList, StateList *readyList, threadArgs_t *threadArgs) {
 
     StateListElement *currentElement = blockedList->front;
 
     while (currentElement != NULL) {
         TaskControlBlock *currentTask = currentElement->task;
-        printf("\tTask #%d: Ha bisogno ancora di %d clock\n", currentTask->id, currentTask->pc->length);
+        printf("\tCore#%d Task #%d: Ha bisogno ancora di %d clock\n", threadArgs->threadId, currentTask->id,
+               currentTask->pc->length);
 
         currentTask->pc->length--;
+        if (currentTask->pc->length < 0) {
+            printf("Cazzo");
+        }
         if (currentTask->pc->length == 0) {
             StateListElement *endedElement = currentElement;
             currentElement = (StateListElement *) endedElement->previous;
-            removeFromList(blockedList, endedElement);
             pushToStateList(readyList, endedElement->task);
             printf("\tTask #%d: Terminato I/O\n", endedElement->task->id);
+            removeFromList(blockedList, endedElement);
         } else {
             currentElement = (StateListElement *) currentElement->previous;
         }
@@ -95,9 +100,9 @@ void Scheduler(threadArgs_t *threadArgs) {
     StateList *readyList = createStateList();
     StateList *blockedList = createStateList();
 
-    while (pc < 100) { //TODO: SAFE. Remember to remove it
+    while (1) { //TODO: SAFE. Remember to remove it
 
-//        printf("Core#%d - PC #%d\n", threadArgs->threadId, pc);
+//      printf("Core#%d - PC #%d\n", threadArgs->threadId, pc);
 
         FETCH:
         while (nextTaskToArrive != NULL && nextTaskToArrive->arrival_time <= pc) {
@@ -108,8 +113,8 @@ void Scheduler(threadArgs_t *threadArgs) {
             if (nextTaskToArrive->state == state_new) {
                 changeTaskState(nextTaskToArrive, state_ready, pc, threadArgs->threadId);
             } else {
-                pthread_mutex_unlock(threadArgs->mutex);
                 nextTaskToArrive = (TaskControlBlock *) nextTaskToArrive->next;
+                pthread_mutex_unlock(threadArgs->mutex);
                 goto SELECTION;
             }
             pthread_mutex_unlock(threadArgs->mutex);
@@ -193,7 +198,7 @@ void Scheduler(threadArgs_t *threadArgs) {
         }
 
         TICK:
-        tickAllBlockedTasks(blockedList, readyList);
+        tickAllBlockedTasks(blockedList, readyList, threadArgs);
 
         pc++;
     }
