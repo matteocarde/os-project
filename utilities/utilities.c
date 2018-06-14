@@ -60,7 +60,7 @@ programArgs_t getArgsSettings(int argc, char **argv) {
                 } else if (strcmp(optarg, "n") == 0) {
                     argsSettings.noPreemptionPath = path;
                 } else {
-                    fprintf(stderr, "Error: Parameter -o%c not recognised. Use --help to find out the correct usage",
+                    fprintf(stderr, "Error: Parameter -o%s not recognised. Use --help to find out the correct usage",
                             optarg);
                     exit(EX_USAGE);
                 }

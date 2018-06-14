@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
     threadArgsCore2.threadId = 1;
 
     pthread_t first_core_id;
-    pthread_create(&first_core_id, NULL, &Scheduler, &threadArgsCore1);
+    pthread_create(&first_core_id, NULL, (void *(*)(void *)) &Scheduler, &threadArgsCore1);
 
     Scheduler(&threadArgsCore2);
 
