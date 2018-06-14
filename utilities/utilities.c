@@ -13,7 +13,7 @@ void printHelp() {
     printf("-op | --output-preemption:      the path of the output file in which the results of the preemption's scheduler will be put\n"
                    "-on | --output-no-preemption:   the path of the output file in which the results of the no-preemption's scheduler will be put\n"
                    "-i  | --input:                  the path of the input file containing the task's list\n"
-                   "-h  | --help:                   flags if the help has to be printed to the user");
+                   "-h  | --help:                   flags if the help has to be printed to the user\n");
 }
 
 /**
@@ -65,7 +65,12 @@ programArgs_t getArgsSettings(int argc, char **argv) {
                     exit(EX_USAGE);
                 }
                 break;
-
+            case 'n':
+                argsSettings.noPreemptionPath = optarg;
+                break;
+            case 'p':
+                argsSettings.preemptionPath = optarg;
+                break;
             case 'i':
                 argsSettings.inputPath = optarg;
                 break;
