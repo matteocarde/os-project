@@ -3,7 +3,7 @@
 //
 
 #include <stdlib.h>
-#include "Instruction.h";
+#include "Instruction.h"
 #include "InstructionsList.h"
 
 

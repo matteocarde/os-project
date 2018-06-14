@@ -44,6 +44,7 @@ char *getStateName(enum task_state state) {
         case state_exit:
             return "exit";
     }
+    return "";
 }
 
 void
