@@ -34,6 +34,23 @@ void pushToStateList(StateList *list, TaskControlBlock *task) {
 
 }
 
+TaskControlBlock *popFromStateList(StateList *list) {
+
+    if (list->nOfElements == 0) {
+        return NULL;
+    }
+
+    StateListElement *poppedElement = list->front;
+    TaskControlBlock *poppedTask = poppedElement->task;
+
+    list->front = (StateListElement *) list->front->previous;
+    list->nOfElements--;
+    free(poppedElement);
+
+
+    return poppedTask;
+}
+
 
 void removeFromList(StateList *list, StateListElement *element) {
 

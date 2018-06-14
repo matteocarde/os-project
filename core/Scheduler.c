@@ -8,10 +8,11 @@
 #include "../structures/TaskControlBlock.h"
 #include "../structures/Instruction.h"
 #include <stddef.h>
-#include <printf.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <pthread.h>
+#include <printf.h>
+//#include <printf.h>
 
 
 //SPN: Shortest Process Time
@@ -30,8 +31,9 @@ TaskControlBlock *selectionFunctionSPN(StateList *readyList) {
         }
         currentElement = (StateListElement *) currentElement->previous;
     }
+    TaskControlBlock *selectedTask = selectedElement->task;
     removeFromList(readyList, selectedElement);
-    return selectedElement->task;
+    return selectedTask;
 }
 
 
@@ -51,8 +53,9 @@ TaskControlBlock *selectionFunctionSRT(StateList *readyList) {
         }
         currentElement = (StateListElement *) currentElement->previous;
     }
+    TaskControlBlock *selectedTask = selectedElement->task;
     removeFromList(readyList, selectedElement);
-    return selectedElement->task;
+    return selectedTask;
 }
 
 
@@ -83,10 +86,10 @@ void tickAllBlockedTasks(StateList *blockedList, StateList *readyList, threadArg
 
 }
 
-int getRandomLenght(int maxLenght) {
+int getRandomLength(int maxLength) {
     srand((unsigned int) time(NULL));
-    return maxLenght;
-    return rand() % maxLenght + 1; //TODO: Ricordati di rimuoverlo
+    return maxLength;
+    return rand() % maxLength + 1; //TODO: Ricordati di rimuoverlo
 }
 
 void Scheduler(threadArgs_t *threadArgs) {
@@ -112,6 +115,8 @@ void Scheduler(threadArgs_t *threadArgs) {
             //Utilizzo il mutex qui per rendere atomica il check e il cambio dello stato della task
             if (nextTaskToArrive->state == state_new) {
                 changeTaskState(nextTaskToArrive, state_ready, pc, threadArgs->threadId);
+                pushToStateList(readyList, nextTaskToArrive);
+                fprintf(stderr, "%d;%d\n", threadArgs->threadId, nextTaskToArrive->id);
             } else {
                 nextTaskToArrive = (TaskControlBlock *) nextTaskToArrive->next;
                 pthread_mutex_unlock(threadArgs->mutex);
@@ -119,7 +124,6 @@ void Scheduler(threadArgs_t *threadArgs) {
             }
             pthread_mutex_unlock(threadArgs->mutex);
 
-            pushToStateList(readyList, nextTaskToArrive);
             nextTaskToArrive = (TaskControlBlock *) nextTaskToArrive->next;
             if (threadArgs->isPreemptive && runningTask != NULL) {
                 //Se siamo in modalità preemptive, secondo l'algoritmo SRT, devo rischedulare ad ogni arrivo
@@ -142,6 +146,7 @@ void Scheduler(threadArgs_t *threadArgs) {
             if (runningTask == NULL) {
                 goto TICK;
             }
+
 
             if (runningTask->pc == NULL) {
                 currentInstruction = runningTask->instructionList->head;
@@ -190,7 +195,7 @@ void Scheduler(threadArgs_t *threadArgs) {
         }
 
         if (currentInstruction->type_flag == blocking) {
-            currentInstruction->length = getRandomLenght(currentInstruction->length);
+            currentInstruction->length = getRandomLength(currentInstruction->length);
             changeTaskState(runningTask, state_blocked, pc, threadArgs->threadId);
             pushToStateList(blockedList, runningTask);
             runningTask = NULL;
