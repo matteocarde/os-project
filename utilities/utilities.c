@@ -4,6 +4,7 @@
 #include <string.h>
 #include "utilities.h"
 #include <unistd.h>
+#include <sysexits.h>
 #include "../libs/csvparser.h"
 #include "../structures/TaskList.h"
 
@@ -29,6 +30,9 @@ void printHelp() {
 programArgs_t getArgsSettings(int argc, char **argv) {
 
     programArgs_t argsSettings;
+    argsSettings.preemptionPath = NULL;
+    argsSettings.noPreemptionPath = NULL;
+    argsSettings.inputPath = NULL;
 
     const char *const short_options = "ho:i:np";
 
@@ -49,7 +53,7 @@ programArgs_t getArgsSettings(int argc, char **argv) {
         switch (nextOption) {
             case 'h':
                 printHelp();
-                abort();
+                exit(0);
             case 'o':
                 if (strcmp(optarg, "p") == 0) {
                     argsSettings.preemptionPath = path;
@@ -58,6 +62,7 @@ programArgs_t getArgsSettings(int argc, char **argv) {
                 } else {
                     fprintf(stderr, "Error: Parameter -o%c not recognised. Use --help to find out the correct usage",
                             optarg);
+                    exit(EX_USAGE);
                 }
                 break;
 
@@ -71,26 +76,16 @@ programArgs_t getArgsSettings(int argc, char **argv) {
             default:
                 fprintf(stderr,
                         "Error: You have to specify the parameters. Use --help to find out the correct usage\n");
-                abort();
+                exit(EX_USAGE);
         }
     } while (nextOption != -1);
 
-    FILE *noPreemptionFile = fopen(argsSettings.noPreemptionPath, "w");
-    if (noPreemptionFile == NULL) {
-        printf("Error opening file for preemption!\n");
-        exit(1);
+    if (argsSettings.inputPath == NULL || argsSettings.noPreemptionPath == NULL ||
+        argsSettings.preemptionPath == NULL) {
+        printf("ERROR: Improper use. Here's the guide:\n");
+        printHelp();
+        exit(EX_USAGE);
     }
-
-    FILE *preemptionFile = fopen(argsSettings.preemptionPath, "w");
-    if (preemptionFile == NULL) {
-        printf("Error opening file for preemption!\n");
-        exit(1);
-    }
-
-
-    argsSettings.noPreemptionFile = noPreemptionFile;
-    argsSettings.preemptionFile = preemptionFile;
-
 
     return argsSettings;
 }
@@ -109,8 +104,8 @@ TaskList *getTaskListFromCSV(char *inputFilePath) {
     TaskControlBlock *currentTask = NULL;
 
     if (access(inputFilePath, R_OK) == -1) {
-        fprintf(stderr, "File %s not found\n", inputFilePath);
-        return NULL;
+        perror(inputFilePath);
+        exit(EX_IOERR);
     }
 
     CsvParser *csvParser = CsvParser_new(inputFilePath, ",", 0);
@@ -133,7 +128,7 @@ TaskList *getTaskListFromCSV(char *inputFilePath) {
         } else if (strcmp(type, "i") == 0) {
             if (currentTask == NULL) {
                 fprintf(stderr, "CSV FORMAT ERROR: The file starts with instructions without a parent task");
-                return 1;
+                exit(EX_DATAERR);
             }
             enum blockingFlag type_flag = (enum blockingFlag) atoi(rowFields[1]);
             int length = atoi(rowFields[2]);
@@ -151,7 +146,7 @@ TaskList *getTaskListFromCSV(char *inputFilePath) {
 
     if (taskList->head == NULL) {
         fprintf(stderr, "ERROR: Impossible to create tasklist\n");
-        return NULL;
+        exit(EX_DATAERR);
     }
 
     return taskList;

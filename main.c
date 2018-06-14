@@ -10,20 +10,31 @@ int main(int argc, char **argv) {
 
     //TODO: Use perror e codici di errore da https://goo.gl/Y40V0r
 
-    printf("Getting programArgs from args...\n");
     programArgs_t programArgs = getArgsSettings(argc, argv);
 
-    printf("Path preemption %s\nPath nopreemption %s\nPath input %s\n", programArgs.preemptionPath,
-           programArgs.noPreemptionPath, programArgs.inputPath);
 
+    FILE *noPreemptionFile = fopen(programArgs.noPreemptionPath, "w");
+    if (noPreemptionFile == NULL) {
+        perror(programArgs.noPreemptionPath);
+        exit(EX_CANTCREAT);
+    }
 
-    printf("Getting TaskList from CSV...\n");
+    FILE *preemptionFile = fopen(programArgs.preemptionPath, "w");
+    if (preemptionFile == NULL) {
+        perror(programArgs.preemptionPath);
+        exit(EX_CANTCREAT);
+    }
+
+    programArgs.noPreemptionFile = noPreemptionFile;
+    programArgs.preemptionFile = preemptionFile;
+
+    printf("Loading TaskList from CSV...\n");
     TaskList *taskList = getTaskListFromCSV(programArgs.inputPath);
     if (taskList == NULL) {
         fprintf(stderr, "ERROR: Impossible to create task list");
         exit(EX_OSFILE);
     }
-    printf("Finished getting TaskList from CSV\n");
+    printf("Finished loading TaskList from CSV\n");
 
     pid_t child_pid = fork();
 
