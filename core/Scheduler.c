@@ -98,7 +98,7 @@ void Scheduler(threadArgs_t *threadArgs) {
 
     while (1) {
 
-        FETCH:
+//        FETCH:
         while (nextTaskToArrive != NULL && nextTaskToArrive->arrival_time <= clock) {
 
             pthread_mutex_lock(threadArgs->mutex);
@@ -195,5 +195,7 @@ void Scheduler(threadArgs_t *threadArgs) {
 
         clock++;
     }
+
+    printf("Core Terminato\n");
 }
 

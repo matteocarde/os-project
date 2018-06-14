@@ -47,6 +47,7 @@ char *getStateName(enum task_state state) {
 
 void
 changeTaskState(TaskControlBlock *task, enum task_state state, unsigned int clock, int threadId, FILE *outputFile) {
+//    fprintf(stdout, "core%d,%d,%d,%s\n", threadId, clock, task->id, getStateName(state));
     fprintf(outputFile, "core%d,%d,%d,%s\n", threadId, clock, task->id, getStateName(state));
     task->state = state;
 }

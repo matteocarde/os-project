@@ -18,7 +18,7 @@ CsvParser *CsvParser_new(const char *filePath, const char *delimiter, int firstL
     } else {
         int filePathLen = strlen(filePath);
         csvParser->filePath_ = (char *) malloc((filePathLen + 1));
-        strcpy(csvParser->filePath_, "../");
+        strcpy(csvParser->filePath_, "./");
         strcat(csvParser->filePath_, filePath);
     }
     csvParser->firstLineIsHeader_ = firstLineIsHeader;

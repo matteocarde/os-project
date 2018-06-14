@@ -4,6 +4,7 @@
 #include <string.h>
 #include "utilities.h"
 #include "../libs/csvparser.h"
+#include "../structures/TaskList.h"
 
 
 void printHelp() {
@@ -105,11 +106,9 @@ TaskList *getTaskListFromCSV(char *inputFilePath) {
 
     TaskControlBlock *currentTask = NULL;
 
-    CsvParser *csvParser = CsvParser_new(inputFilePath, ",", 0);
-    CsvRow *row;
 
     char *relativePath;
-    strcpy(relativePath, "../");
+    strcpy(relativePath, "./");
     strcat(relativePath, inputFilePath);
 
 
@@ -117,6 +116,9 @@ TaskList *getTaskListFromCSV(char *inputFilePath) {
         fprintf(stderr, "File %s not found\n", inputFilePath);
         return NULL;
     }
+
+    CsvParser *csvParser = CsvParser_new(relativePath, ",", 0);
+    CsvRow *row;
 
     do {
         row = CsvParser_getRow(csvParser);
@@ -150,6 +152,11 @@ TaskList *getTaskListFromCSV(char *inputFilePath) {
     } while (row);
 
     CsvParser_destroy(csvParser);
+
+    if (taskList->head == NULL) {
+        fprintf(stderr, "Impossibile creare la tasklist\n");
+        return NULL;
+    }
 
     return taskList;
 }
