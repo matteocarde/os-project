@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "utilities.h"
+#include <unistd.h>
 #include "../libs/csvparser.h"
 #include "../structures/TaskList.h"
 

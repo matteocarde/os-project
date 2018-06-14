@@ -3,7 +3,7 @@
 //
 
 #include <stdbool.h>
-#include <ntsid.h>
+#include <pthread.h>
 #include "../structures/TaskList.h"
 
 #ifndef OS_PROJECT_UTILITIES_H

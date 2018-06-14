@@ -2,7 +2,6 @@
 // Created by Matteo Cardellini on 10/06/18.
 //
 
-#include <MacTypes.h>
 #include <stdlib.h>
 #include "StateList.h"
 

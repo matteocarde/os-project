@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <ntsid.h>
-#include <zconf.h>
 #include <sysexits.h>
 #include <pthread.h>
+#include <unistd.h>
 #include "utilities/utilities.h"
 #include "core/Scheduler.h"
 
@@ -27,7 +26,6 @@ int main(int argc, char **argv) {
     printf("Finished getting TaskList from CSV\n");
 
     pid_t child_pid = fork();
-
 
 
     pthread_mutex_t mutex;

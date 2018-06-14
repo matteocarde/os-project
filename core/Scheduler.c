@@ -5,10 +5,7 @@
 #include "../structures/TaskList.h"
 #include "../structures/StateList.h"
 #include "../utilities/utilities.h"
-#include <stddef.h>
 #include <stdlib.h>
-#include <stdio.h>
-#include <pthread.h>
 
 
 //SPN: Shortest Process Time
