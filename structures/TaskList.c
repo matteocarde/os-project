@@ -2,9 +2,8 @@
 // Created by Matteo Cardellini on 17/04/18.
 //
 
-#include "TaskControlBlock.h";
+#include "TaskControlBlock.h"
 #include "TaskList.h"
-#include <stddef.h>
 #include <stdlib.h>
 
 /**

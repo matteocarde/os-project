@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "utilities.h"
-#include "../structures/TaskList.h"
 #include "../libs/csvparser.h"
 
 
@@ -73,6 +72,22 @@ programArgs_t getArgsSettings(int argc, char **argv) {
                 abort();
         }
     } while (nextOption != -1);
+
+    FILE *preemptionFile = fopen(argsSettings.preemptionPath, "w");
+    if (preemptionFile == NULL) {
+        printf("Error opening file for preemption!\n");
+        exit(1);
+    }
+
+    FILE *noPreemptionFile = fopen(argsSettings.noPreemptionPath, "w");
+    if (noPreemptionFile == NULL) {
+        printf("Error opening file for preemption!\n");
+        exit(1);
+    }
+
+    argsSettings.preemptionFile = preemptionFile;
+    argsSettings.noPreemptionFile = noPreemptionFile;
+
 
     return argsSettings;
 }

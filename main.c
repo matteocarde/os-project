@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
 
     threadArgs_t threadArgsCore1 = threadArgsCore1;
     threadArgsCore1.taskList = taskList;
-    threadArgsCore1.isPreemptive = child_pid == 0;
+    threadArgsCore1.isPreemptive = child_pid == 0; // Figlio -> Preemptive, Padre -> Non-Preemptive
     threadArgsCore1.programArgs = programArgs;
     threadArgsCore1.threadId = 0;
     threadArgsCore1.mutex = &mutex;

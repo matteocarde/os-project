@@ -12,6 +12,8 @@
 typedef struct {
     char *preemptionPath;
     char *noPreemptionPath;
+    FILE* preemptionFile;
+    FILE* noPreemptionFile;
     char *inputPath;
     int isHelp;
 } programArgs_t;

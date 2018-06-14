@@ -6,6 +6,7 @@
 #define OS_PROJECT_TASK_H
 
 #include "InstructionsList.h"
+#include <stdio.h>
 
 /*
  * Un task in esecuzione viene gestito tramite una struttura dati, la Task Control Block (TCB), definita da:
@@ -38,6 +39,6 @@ typedef struct {
 
 TaskControlBlock *createTaskControlBlock(int id, int arrival_time);
 
-void changeTaskState(TaskControlBlock *task, enum task_state state, unsigned int pc, int threadId);
+void changeTaskState(TaskControlBlock *task, enum task_state state, unsigned int clock, int threadId, FILE* outputFile);
 
 #endif //OS_PROJECT_TASK_H

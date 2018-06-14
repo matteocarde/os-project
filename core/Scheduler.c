@@ -5,14 +5,10 @@
 #include "../structures/TaskList.h"
 #include "../structures/StateList.h"
 #include "../utilities/utilities.h"
-#include "../structures/TaskControlBlock.h"
-#include "../structures/Instruction.h"
 #include <stddef.h>
 #include <stdlib.h>
-#include <stdbool.h>
+#include <stdio.h>
 #include <pthread.h>
-#include <printf.h>
-//#include <printf.h>
 
 
 //SPN: Shortest Process Time
@@ -65,18 +61,12 @@ void tickAllBlockedTasks(StateList *blockedList, StateList *readyList, threadArg
 
     while (currentElement != NULL) {
         TaskControlBlock *currentTask = currentElement->task;
-        printf("\tCore#%d Task #%d: Ha bisogno ancora di %d clock\n", threadArgs->threadId, currentTask->id,
-               currentTask->pc->length);
 
         currentTask->pc->length--;
-        if (currentTask->pc->length < 0) {
-            printf("Cazzo");
-        }
         if (currentTask->pc->length == 0) {
             StateListElement *endedElement = currentElement;
             currentElement = (StateListElement *) endedElement->previous;
             pushToStateList(readyList, endedElement->task);
-            printf("\tTask #%d: Terminato I/O\n", endedElement->task->id);
             removeFromList(blockedList, endedElement);
         } else {
             currentElement = (StateListElement *) currentElement->previous;
@@ -88,13 +78,12 @@ void tickAllBlockedTasks(StateList *blockedList, StateList *readyList, threadArg
 
 int getRandomLength(int maxLength) {
     srand((unsigned int) time(NULL));
-    return maxLength;
-    return rand() % maxLength + 1; //TODO: Ricordati di rimuoverlo
+    return rand() % maxLength + 1;
 }
 
 void Scheduler(threadArgs_t *threadArgs) {
 
-    unsigned int pc = 0;
+    unsigned int clock = 0;
 
     TaskControlBlock *nextTaskToArrive = threadArgs->taskList->head;
     TaskControlBlock *runningTask = NULL;
@@ -103,20 +92,21 @@ void Scheduler(threadArgs_t *threadArgs) {
     StateList *readyList = createStateList();
     StateList *blockedList = createStateList();
 
-    while (1) { //TODO: SAFE. Remember to remove it
+    FILE *outputFile = threadArgs->isPreemptive ? threadArgs->programArgs.preemptionFile
+                                                : threadArgs->programArgs.noPreemptionFile;
 
-//      printf("Core#%d - PC #%d\n", threadArgs->threadId, pc);
+
+    while (1) {
 
         FETCH:
-        while (nextTaskToArrive != NULL && nextTaskToArrive->arrival_time <= pc) {
+        while (nextTaskToArrive != NULL && nextTaskToArrive->arrival_time <= clock) {
 
             pthread_mutex_lock(threadArgs->mutex);
             //Se la nextTaskToArrive non è nello state_new vuol dire che l'altro core l'ha già presa in carico
             //Utilizzo il mutex qui per rendere atomica il check e il cambio dello stato della task
             if (nextTaskToArrive->state == state_new) {
-                changeTaskState(nextTaskToArrive, state_ready, pc, threadArgs->threadId);
+                changeTaskState(nextTaskToArrive, state_ready, clock, threadArgs->threadId, outputFile);
                 pushToStateList(readyList, nextTaskToArrive);
-                fprintf(stderr, "%d;%d\n", threadArgs->threadId, nextTaskToArrive->id);
             } else {
                 nextTaskToArrive = (TaskControlBlock *) nextTaskToArrive->next;
                 pthread_mutex_unlock(threadArgs->mutex);
@@ -128,7 +118,7 @@ void Scheduler(threadArgs_t *threadArgs) {
             if (threadArgs->isPreemptive && runningTask != NULL) {
                 //Se siamo in modalità preemptive, secondo l'algoritmo SRT, devo rischedulare ad ogni arrivo
                 pushToStateList(readyList, runningTask);
-                changeTaskState(runningTask, state_ready, pc, threadArgs->threadId);
+                changeTaskState(runningTask, state_ready, clock, threadArgs->threadId, outputFile);
                 runningTask = NULL;
             }
         }
@@ -156,7 +146,7 @@ void Scheduler(threadArgs_t *threadArgs) {
 
         if (runningTask->pc->length == 0) {
             if (runningTask->pc->next == NULL) {
-                changeTaskState(runningTask, state_exit, pc, threadArgs->threadId);
+                changeTaskState(runningTask, state_exit, clock, threadArgs->threadId, outputFile);
                 runningTask = NULL;
                 goto TICK;
             } else {
@@ -171,23 +161,21 @@ void Scheduler(threadArgs_t *threadArgs) {
         runningTask->pc = currentInstruction;
 
         if (runningTask->state != state_running) {
-            changeTaskState(runningTask, state_running, pc, threadArgs->threadId);
+            changeTaskState(runningTask, state_running, clock, threadArgs->threadId, outputFile);
         }
 
         if (currentInstruction->type_flag == nonBlocking) {
             currentInstruction->length--;
             runningTask->execution_time++;
 
-            printf("\tTask #%d: Eseguo calcolo\n", runningTask->id);
             if (currentInstruction->length > 0) {
                 goto TICK;
             }
 
             if (currentInstruction->next != NULL) {
-                printf("\tTask #%d: Nuova istruzione\n", runningTask->id);
                 currentInstruction = (Instruction *) currentInstruction->next;
             } else {
-                changeTaskState(runningTask, state_exit, pc, threadArgs->threadId);
+                changeTaskState(runningTask, state_exit, clock, threadArgs->threadId, outputFile);
                 currentInstruction = NULL;
                 runningTask = NULL;
             }
@@ -196,7 +184,7 @@ void Scheduler(threadArgs_t *threadArgs) {
 
         if (currentInstruction->type_flag == blocking) {
             currentInstruction->length = getRandomLength(currentInstruction->length);
-            changeTaskState(runningTask, state_blocked, pc, threadArgs->threadId);
+            changeTaskState(runningTask, state_blocked, clock, threadArgs->threadId, outputFile);
             pushToStateList(blockedList, runningTask);
             runningTask = NULL;
             currentInstruction = NULL;
@@ -205,9 +193,7 @@ void Scheduler(threadArgs_t *threadArgs) {
         TICK:
         tickAllBlockedTasks(blockedList, readyList, threadArgs);
 
-        pc++;
+        clock++;
     }
-
-    printf("Core #%d - PC #%d END\n", threadArgs->threadId, pc);
 }
 
