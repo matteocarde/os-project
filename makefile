@@ -1,6 +1,5 @@
 #Preso spunto da https://web.stanford.edu/class/cs107/guide/make.html
 
-
 #
 # A simple makefile for managing build of project composed of C source files.
 #
