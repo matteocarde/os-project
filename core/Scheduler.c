@@ -196,6 +196,7 @@ void Scheduler(threadArgs_t *threadArgs) {
         clock++;
     }
 
-    printf("Core Terminato\n");
+    char* type = threadArgs->isPreemptive ? "Preemptive" : "Not Preemptive";
+    printf("%s - Core#%d  Finished\n", type, threadArgs->threadId);
 }
 

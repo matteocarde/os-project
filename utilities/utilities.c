@@ -74,20 +74,21 @@ programArgs_t getArgsSettings(int argc, char **argv) {
         }
     } while (nextOption != -1);
 
-    FILE *preemptionFile = fopen(argsSettings.preemptionPath, "w");
-    if (preemptionFile == NULL) {
-        printf("Error opening file for preemption!\n");
-        exit(1);
-    }
-
     FILE *noPreemptionFile = fopen(argsSettings.noPreemptionPath, "w");
     if (noPreemptionFile == NULL) {
         printf("Error opening file for preemption!\n");
         exit(1);
     }
 
-    argsSettings.preemptionFile = preemptionFile;
+    FILE *preemptionFile = fopen(argsSettings.preemptionPath, "w");
+    if (preemptionFile == NULL) {
+        printf("Error opening file for preemption!\n");
+        exit(1);
+    }
+
+
     argsSettings.noPreemptionFile = noPreemptionFile;
+    argsSettings.preemptionFile = preemptionFile;
 
 
     return argsSettings;
@@ -106,18 +107,12 @@ TaskList *getTaskListFromCSV(char *inputFilePath) {
 
     TaskControlBlock *currentTask = NULL;
 
-
-    char *relativePath;
-    strcpy(relativePath, "./");
-    strcat(relativePath, inputFilePath);
-
-
-    if (access(relativePath, R_OK) == -1) {
+    if (access(inputFilePath, R_OK) == -1) {
         fprintf(stderr, "File %s not found\n", inputFilePath);
         return NULL;
     }
 
-    CsvParser *csvParser = CsvParser_new(relativePath, ",", 0);
+    CsvParser *csvParser = CsvParser_new(inputFilePath, ",", 0);
     CsvRow *row;
 
     do {
@@ -154,7 +149,7 @@ TaskList *getTaskListFromCSV(char *inputFilePath) {
     CsvParser_destroy(csvParser);
 
     if (taskList->head == NULL) {
-        fprintf(stderr, "Impossibile creare la tasklist\n");
+        fprintf(stderr, "ERROR: Impossible to create tasklist\n");
         return NULL;
     }
 

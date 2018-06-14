@@ -12,8 +12,7 @@ int main(int argc, char **argv) {
     //TODO: Use perror e codici di errore da https://goo.gl/Y40V0r
 
     printf("Getting programArgs from args...\n");
-    programArgs_t programArgs;
-    programArgs = getArgsSettings(argc, argv);
+    programArgs_t programArgs = getArgsSettings(argc, argv);
 
     printf("Path preemption %s\nPath nopreemption %s\nPath input %s\n", programArgs.preemptionPath,
            programArgs.noPreemptionPath, programArgs.inputPath);
@@ -25,14 +24,16 @@ int main(int argc, char **argv) {
         fprintf(stderr, "ERROR: Impossible to create task list");
         exit(EX_OSFILE);
     }
-    printf("Done\n");
+    printf("Finished getting TaskList from CSV\n");
 
     pid_t child_pid = fork();
+
+
 
     pthread_mutex_t mutex;
     pthread_mutex_init(&mutex, NULL);
 
-    threadArgs_t threadArgsCore1 = threadArgsCore1;
+    threadArgs_t threadArgsCore1;
     threadArgsCore1.taskList = taskList;
     threadArgsCore1.isPreemptive = child_pid == 0; // Figlio -> Preemptive, Padre -> Non-Preemptive
     threadArgsCore1.programArgs = programArgs;
@@ -47,6 +48,12 @@ int main(int argc, char **argv) {
 
     Scheduler(&threadArgsCore2);
 
+
     pthread_join(first_core_id, NULL);
+
+    if (child_pid != 0) {
+        waitpid(child_pid, NULL, 0);
+    }
+
 
 }
